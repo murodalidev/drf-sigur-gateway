@@ -73,40 +73,61 @@ def extract_named_params(raw_sql: str) -> set[str]:
     return {match.group('name') for match in NAMED_PARAM_PATTERN.finditer(raw_sql)}
 
 
-def normalise_named_placeholders(raw_sql: str) -> Tuple[str, set[str]]:
+def analyse_placeholders(raw_sql: str) -> Tuple[str, set[str], int]:
     """
-    Convert alternative placeholder styles (e.g. :param) to PyMySQL's ``%(param)s``
-    and return both the normalised SQL and discovered placeholder names.
+    Convert alternative placeholder styles to PyMySQL format and detect named/positional usage.
+
+    Returns a tuple of (normalised_sql, named_params, positional_count).
     """
     normalised_sql = COLON_PARAM_PATTERN.sub(lambda m: f"%({m.group('name')})s", raw_sql)
-    return normalised_sql, extract_named_params(normalised_sql)
+    named_params = extract_named_params(normalised_sql)
+    positional_count = len(POSITIONAL_PARAM_PATTERN.findall(normalised_sql))
+
+    if named_params and positional_count:
+        raise MySQLParameterError(
+            "SQL so'rovda nomlangan (`%(name)s`) va pozitsion (`%s`) parametrlar aralashtirilgan. "
+            "Iltimos faqat nomlangan parametr uslubidan foydalaning."
+        )
+
+    return normalised_sql, named_params, positional_count
 
 
 def get_required_named_params(raw_sql: str) -> List[str]:
     """Return sorted list of required named parameters for the given SQL."""
-    _, params = normalise_named_placeholders(raw_sql)
+    _, params, _ = analyse_placeholders(raw_sql)
     return sorted(params)
 
 
 def _validate_params(
     normalised_sql: str,
     required_named_params: set[str],
+    positional_count: int,
     params: Mapping[str, Any] | Sequence[Any] | None,
 ) -> Mapping[str, Any] | Sequence[Any] | None:
     """Ensure that provided params satisfy the placeholders in the SQL string."""
-    positional_count = len(POSITIONAL_PARAM_PATTERN.findall(normalised_sql))
-
-    if required_named_params and positional_count:
-        raise MySQLParameterError(
-            "SQL so'rovda nomlangan (`%(name)s`) va pozitsion (`%s`) parametrlar aralashtirilgan. "
-            "Iltimos faqat nomlangan parametr uslubidan foydalaning."
-        )
-
     if positional_count:
-        raise MySQLParameterError(
-            "SQL hozircha faqat nomlangan parametrlarni (`%(name)s`) qo'llab-quvvatlaydi. "
-            "So'rovdagi barcha `%s` o'rniga mos nomlangan parametrlardan foydalaning."
-        )
+        if params is None:
+            raise MySQLParameterError(
+                f"SQL bajarish uchun {positional_count} ta pozitsion parametr talab etiladi, "
+                "ammo hech qanday parametr yuborilmadi."
+            )
+
+        if isinstance(params, Mapping):
+            ordered_values: List[Any] = list(params.values())
+        elif isinstance(params, Sequence) and not isinstance(params, (str, bytes)):
+            ordered_values = list(params)
+        else:
+            raise MySQLParameterError(
+                "Pozitsion parametrlar uchun ro'yxat yoki tuple ko'rinishidagi `params` kutilgan."
+            )
+
+        if len(ordered_values) != positional_count:
+            raise MySQLParameterError(
+                f"SQL bajarish uchun {positional_count} ta pozitsion parametr talab etiladi, "
+                f"ammo {len(ordered_values)} ta qiymat yuborildi."
+            )
+
+        return tuple(ordered_values)
 
     if not required_named_params:
         if params:
@@ -206,8 +227,8 @@ def execute_raw_sql(
     if isinstance(target, str):
         target = MySQLDatabase.from_value(target)
 
-    normalised_sql, required_named_params = normalise_named_placeholders(raw_sql)
-    params = _validate_params(normalised_sql, required_named_params, params)
+    normalised_sql, required_named_params, positional_count = analyse_placeholders(raw_sql)
+    params = _validate_params(normalised_sql, required_named_params, positional_count, params)
 
     config = _collect_config(target)
 

@@ -16,8 +16,8 @@ from .services.mysql import (
     MySQLDatabase,
     MySQLExecutionError,
     MySQLParameterError,
+    analyse_placeholders,
     execute_raw_sql,
-    get_required_named_params,
 )
 
 
@@ -39,12 +39,21 @@ class SqlRetrieveView(APIView):
 
     def get(self, request, path: str):
         sql_object = get_object_or_404(Sql, path=path, is_active=True)
-        required_params = get_required_named_params(sql_object.raw)
+        required_params = []
+        positional_params_count = 0
 
         try:
+            _, named_params, positional_params_count = analyse_placeholders(sql_object.raw)
+            required_params = sorted(named_params)
             target_db = MySQLDatabase.from_value(sql_object.database)
-            query_params = request.query_params.dict()
-            params = query_params or None
+
+            if positional_params_count:
+                params_sequence = list(request.query_params.values())
+                params = tuple(params_sequence) if params_sequence else None
+            else:
+                query_params = request.query_params.dict()
+                params = query_params or None
+
             data = execute_raw_sql(sql_object.raw, params=params, target=target_db)
         except MySQLConfigurationError as exc:
             raise APIException(str(exc))
@@ -54,6 +63,7 @@ class SqlRetrieveView(APIView):
             detail: Dict[str, Any] = {
                 'detail': str(exc),
                 'required_params': required_params,
+                'positional_params_count': positional_params_count,
             }
             if getattr(exc, 'missing_params', None):
                 detail['missing_params'] = exc.missing_params
@@ -62,7 +72,12 @@ class SqlRetrieveView(APIView):
             raise APIException(str(exc))
 
         return Response(
-            {'path': sql_object.path, 'required_params': required_params, 'data': data},
+            {
+                'path': sql_object.path,
+                'required_params': required_params,
+                'positional_params_count': positional_params_count,
+                'data': data,
+            },
             status=status.HTTP_200_OK,
         )
 
