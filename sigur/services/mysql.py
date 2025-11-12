@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Mapping, Sequence
 
 import pymysql
 from django.core.serializers.json import DjangoJSONEncoder
@@ -25,6 +26,14 @@ class MySQLConnectionError(MySQLServiceError):
 
 class MySQLExecutionError(MySQLServiceError):
     """Raised when the SQL execution fails."""
+
+
+class MySQLParameterError(MySQLServiceError):
+    """Raised when provided query parameters do not satisfy the SQL placeholders."""
+
+    def __init__(self, message: str, *, missing_params: Iterable[str] | None = None) -> None:
+        super().__init__(message)
+        self.missing_params: List[str] = list(missing_params or [])
 
 
 class MySQLDatabase(str, Enum):
@@ -52,6 +61,43 @@ class MySQLConfig:
 def _to_json_safe(data: Any) -> Any:
     """Convert database result values to JSON serializable objects."""
     return json.loads(json.dumps(data, cls=DjangoJSONEncoder))
+
+
+NAMED_PARAM_PATTERN = re.compile(r"%\((?P<name>[A-Za-z_][A-Za-z0-9_]*)\)s")
+
+
+def extract_named_params(raw_sql: str) -> set[str]:
+    """Return the set of named placeholders present in the raw SQL."""
+    return {match.group('name') for match in NAMED_PARAM_PATTERN.finditer(raw_sql)}
+
+
+def _validate_params(raw_sql: str, params: Mapping[str, Any] | Sequence[Any] | None) -> Mapping[str, Any] | Sequence[Any] | None:
+    """Ensure that provided params satisfy the placeholders in the SQL string."""
+    required_named_params = extract_named_params(raw_sql)
+
+    if not required_named_params:
+        return params
+
+    if params is None:
+        missing_sorted = sorted(required_named_params)
+        raise MySQLParameterError(
+            "SQL nomlangan parametrlar talab qiladi. Quyidagilar yetishmaydi: "
+            + ', '.join(missing_sorted),
+            missing_params=missing_sorted,
+        )
+
+    if not isinstance(params, Mapping):
+        raise MySQLParameterError("Nomlangan parametrlar uchun dict yoki mapping ko'rinishidagi `params` kutilgan.")
+
+    missing = [name for name in required_named_params if name not in params]
+    if missing:
+        missing_sorted = sorted(missing)
+        raise MySQLParameterError(
+            "SQL bajarish uchun quyidagi parametrlar yetishmaydi: " + ', '.join(missing_sorted),
+            missing_params=missing_sorted,
+        )
+
+    return params
 
 
 def _collect_config(target: MySQLDatabase) -> MySQLConfig:
@@ -102,17 +148,24 @@ def _collect_config(target: MySQLDatabase) -> MySQLConfig:
     )
 
 
-def execute_raw_sql(raw_sql: str, target: MySQLDatabase = MySQLDatabase.MAIN) -> Dict[str, Any]:
+def execute_raw_sql(
+    raw_sql: str,
+    *,
+    params: Mapping[str, Any] | Sequence[Any] | None = None,
+    target: MySQLDatabase = MySQLDatabase.MAIN,
+) -> Dict[str, Any]:
     """
     Execute a raw SQL query against the configured MySQL database.
 
     Returns a JSON-serialisable dictionary with either the fetched rows
-    or metadata about the executed statement.
+    or metadata about the executed statement. Supports both positional
+    (`%s`) and named (`%(name)s`) query parameters via the `params` argument.
     """
     if isinstance(target, str):
         target = MySQLDatabase.from_value(target)
 
     config = _collect_config(target)
+    params = _validate_params(raw_sql, params)
 
     try:
         connection = pymysql.connect(
@@ -132,7 +185,10 @@ def execute_raw_sql(raw_sql: str, target: MySQLDatabase = MySQLDatabase.MAIN) ->
 
     try:
         with connection.cursor() as cursor:
-            cursor.execute(raw_sql)
+            if params:
+                cursor.execute(raw_sql, params)
+            else:
+                cursor.execute(raw_sql)
 
             if cursor.description:
                 rows: Iterable[Dict[str, Any]] = cursor.fetchall()
