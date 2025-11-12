@@ -5,7 +5,7 @@ import os
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Mapping, Sequence
+from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 import pymysql
 from django.core.serializers.json import DjangoJSONEncoder
@@ -64,6 +64,8 @@ def _to_json_safe(data: Any) -> Any:
 
 
 NAMED_PARAM_PATTERN = re.compile(r"%\((?P<name>[A-Za-z_][A-Za-z0-9_]*)\)s")
+COLON_PARAM_PATTERN = re.compile(r"(?<!:):(?P<name>[A-Za-z_][A-Za-z0-9_]*)")
+POSITIONAL_PARAM_PATTERN = re.compile(r"(?<!%)%(?!\()s")
 
 
 def extract_named_params(raw_sql: str) -> set[str]:
@@ -71,12 +73,52 @@ def extract_named_params(raw_sql: str) -> set[str]:
     return {match.group('name') for match in NAMED_PARAM_PATTERN.finditer(raw_sql)}
 
 
-def _validate_params(raw_sql: str, params: Mapping[str, Any] | Sequence[Any] | None) -> Mapping[str, Any] | Sequence[Any] | None:
+def normalise_named_placeholders(raw_sql: str) -> Tuple[str, set[str]]:
+    """
+    Convert alternative placeholder styles (e.g. :param) to PyMySQL's ``%(param)s``
+    and return both the normalised SQL and discovered placeholder names.
+    """
+    normalised_sql = COLON_PARAM_PATTERN.sub(lambda m: f"%({m.group('name')})s", raw_sql)
+    return normalised_sql, extract_named_params(normalised_sql)
+
+
+def get_required_named_params(raw_sql: str) -> List[str]:
+    """Return sorted list of required named parameters for the given SQL."""
+    _, params = normalise_named_placeholders(raw_sql)
+    return sorted(params)
+
+
+def _validate_params(
+    normalised_sql: str,
+    required_named_params: set[str],
+    params: Mapping[str, Any] | Sequence[Any] | None,
+) -> Mapping[str, Any] | Sequence[Any] | None:
     """Ensure that provided params satisfy the placeholders in the SQL string."""
-    required_named_params = extract_named_params(raw_sql)
+    positional_count = len(POSITIONAL_PARAM_PATTERN.findall(normalised_sql))
+
+    if required_named_params and positional_count:
+        raise MySQLParameterError(
+            "SQL so'rovda nomlangan (`%(name)s`) va pozitsion (`%s`) parametrlar aralashtirilgan. "
+            "Iltimos faqat nomlangan parametr uslubidan foydalaning."
+        )
+
+    if positional_count:
+        raise MySQLParameterError(
+            "SQL hozircha faqat nomlangan parametrlarni (`%(name)s`) qo'llab-quvvatlaydi. "
+            "So'rovdagi barcha `%s` o'rniga mos nomlangan parametrlardan foydalaning."
+        )
 
     if not required_named_params:
-        return params
+        if params:
+            extras: str
+            if isinstance(params, Mapping):
+                extras = ', '.join(sorted(str(key) for key in params.keys()))
+            else:
+                extras = f"{len(params)} ta pozitsion qiymat"
+            raise MySQLParameterError(
+                "Ushbu SQL so'rov parametrlarni qabul qilmaydi, ammo quyidagilar yuborildi: " + extras
+            )
+        return None
 
     if params is None:
         missing_sorted = sorted(required_named_params)
@@ -164,8 +206,10 @@ def execute_raw_sql(
     if isinstance(target, str):
         target = MySQLDatabase.from_value(target)
 
+    normalised_sql, required_named_params = normalise_named_placeholders(raw_sql)
+    params = _validate_params(normalised_sql, required_named_params, params)
+
     config = _collect_config(target)
-    params = _validate_params(raw_sql, params)
 
     try:
         connection = pymysql.connect(
@@ -186,9 +230,9 @@ def execute_raw_sql(
     try:
         with connection.cursor() as cursor:
             if params:
-                cursor.execute(raw_sql, params)
+                cursor.execute(normalised_sql, params)
             else:
-                cursor.execute(raw_sql)
+                cursor.execute(normalised_sql)
 
             if cursor.description:
                 rows: Iterable[Dict[str, Any]] = cursor.fetchall()

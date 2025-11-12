@@ -16,8 +16,8 @@ from .services.mysql import (
     MySQLDatabase,
     MySQLExecutionError,
     MySQLParameterError,
-    extract_named_params,
     execute_raw_sql,
+    get_required_named_params,
 )
 
 
@@ -39,7 +39,7 @@ class SqlRetrieveView(APIView):
 
     def get(self, request, path: str):
         sql_object = get_object_or_404(Sql, path=path, is_active=True)
-        required_params = sorted(extract_named_params(sql_object.raw))
+        required_params = get_required_named_params(sql_object.raw)
 
         try:
             target_db = MySQLDatabase.from_value(sql_object.database)
