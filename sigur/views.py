@@ -71,14 +71,6 @@ class SqlRetrieveView(APIView):
         except MySQLExecutionError as exc:
             raise APIException(str(exc))
 
-        return Response(
-            {
-                'path': sql_object.path,
-                'required_params': required_params,
-                'positional_params_count': positional_params_count,
-                'data': data,
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response({'path': sql_object.path, 'data': data}, status=status.HTTP_200_OK)
 
 
