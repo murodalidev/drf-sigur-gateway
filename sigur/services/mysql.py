@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
@@ -59,8 +60,25 @@ class MySQLConfig:
 
 
 def _to_json_safe(data: Any) -> Any:
-    """Convert database result values to JSON serializable objects."""
-    return json.loads(json.dumps(data, cls=DjangoJSONEncoder))
+    """Convert database result values to JSON serializable objects.
+    
+    Bytes objects are automatically converted to base64-encoded strings
+    to make them JSON serializable (useful for binary data like photos).
+    """
+    if isinstance(data, bytes):
+        # Convert bytes to base64 string for JSON serialization
+        return base64.b64encode(data).decode('utf-8')
+    elif isinstance(data, dict):
+        return {key: _to_json_safe(value) for key, value in data.items()}
+    elif isinstance(data, (list, tuple)):
+        return [_to_json_safe(item) for item in data]
+    else:
+        # For other types, use Django's JSON encoder which handles dates, decimals, etc.
+        try:
+            return json.loads(json.dumps(data, cls=DjangoJSONEncoder))
+        except (TypeError, ValueError):
+            # Fallback: convert to string if still not serializable
+            return str(data)
 
 
 NAMED_PARAM_PATTERN = re.compile(r"%\((?P<name>[A-Za-z_][A-Za-z0-9_]*)\)s")
