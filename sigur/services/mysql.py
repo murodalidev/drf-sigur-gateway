@@ -103,7 +103,7 @@ def analyse_placeholders(raw_sql: str) -> Tuple[str, set[str], int]:
 
     if named_params and positional_count:
         raise MySQLParameterError(
-            "SQL so'rovda nomlangan (`%(name)s`) va pozitsion (`%s`) parametrlar aralashtirilgan. "
+            "API  so'rovda nomlangan (`%(name)s`) va pozitsion (`%s`) parametrlar aralashtirilgan. "
             "Iltimos faqat nomlangan parametr uslubidan foydalaning."
         )
 
@@ -126,7 +126,7 @@ def _validate_params(
     if positional_count:
         if params is None:
             raise MySQLParameterError(
-                f"SQL bajarish uchun {positional_count} ta pozitsion parametr talab etiladi, "
+                f"API bajarish uchun {positional_count} ta pozitsion parametr talab etiladi, "
                 "ammo hech qanday parametr yuborilmadi."
             )
 
@@ -141,7 +141,7 @@ def _validate_params(
 
         if len(ordered_values) != positional_count:
             raise MySQLParameterError(
-                f"SQL bajarish uchun {positional_count} ta pozitsion parametr talab etiladi, "
+                f"API bajarish uchun {positional_count} ta pozitsion parametr talab etiladi, "
                 f"ammo {len(ordered_values)} ta qiymat yuborildi."
             )
 
@@ -155,14 +155,14 @@ def _validate_params(
             else:
                 extras = f"{len(params)} ta pozitsion qiymat"
             raise MySQLParameterError(
-                "Ushbu SQL so'rov parametrlarni qabul qilmaydi, ammo quyidagilar yuborildi: " + extras
+                "Ushbu API so'rov parametrlarni qabul qilmaydi, ammo quyidagilar yuborildi: " + extras
             )
         return None
 
     if params is None:
         missing_sorted = sorted(required_named_params)
         raise MySQLParameterError(
-            "SQL nomlangan parametrlar talab qiladi. Quyidagilar yetishmaydi: "
+            "API nomlangan parametrlar talab qiladi. Quyidagilar yetishmaydi: "
             + ', '.join(missing_sorted),
             missing_params=missing_sorted,
         )
@@ -174,7 +174,7 @@ def _validate_params(
     if missing:
         missing_sorted = sorted(missing)
         raise MySQLParameterError(
-            "SQL bajarish uchun quyidagi parametrlar yetishmaydi: " + ', '.join(missing_sorted),
+            "API bajarish uchun quyidagi parametrlar yetishmaydi: " + ', '.join(missing_sorted),
             missing_params=missing_sorted,
         )
 
@@ -287,7 +287,7 @@ def execute_raw_sql(
     except MySQLError as exc:
         connection.rollback()
         raise MySQLExecutionError(
-            f"SQL bajarishda xatolik: {exc.args[1] if len(exc.args) > 1 else exc}"
+            f"API bajarishda xatolik: {exc.args[1] if len(exc.args) > 1 else exc}"
         ) from exc
     finally:
         connection.close()
