@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAU Sigur API Documentation</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.header-info {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+    font-size: 0.95rem;
+    opacity: 0.9;
+    position: relative;
+}
+
+.header-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badge {
+    background: rgba(255,255,255,0.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.sidebar {
+    display: flex;
+    background: #f8f9fa;
+}
+
+.nav-menu {
+    width: 280px;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 180px);
+    overflow-y: auto;
+}
+
+.nav-section {
+    margin-bottom: 25px;
+}
+
+.nav-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #6c757d;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+}
+
+.nav-item {
+    padding: 10px 15px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-item:hover {
+    background: #e9ecef;
+    color: #2a5298;
+}
+
+.nav-item.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.nav-icon {
+    font-size: 1.1rem;
+}
+
+.content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    height: calc(100vh - 180px);
+}
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.section-title {
+    font-size: 2rem;
+    color: #2a5298;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #667eea;
+}
+
+.endpoint {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.endpoint:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.endpoint-header {
+    padding: 20px 25px;
+    background: linear-gradient(to right, #f8f9fa, #fff);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.method {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.method.get {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.method.post {
+    background: #d4edda;
+    color: #155724;
+}
+
+.endpoint-path {
+    flex: 1;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    color: #495057;
+    font-weight: 500;
+}
+
+.endpoint-toggle {
+    font-size: 1.2rem;
+    color: #6c757d;
+    transition: transform 0.3s;
+}
+
+.endpoint.expanded .endpoint-toggle {
+    transform: rotate(180deg);
+}
+
+.endpoint-body {
+    display: none;
+    padding: 25px;
+    background: #fff;
+}
+
+.endpoint.expanded .endpoint-body {
+    display: block;
+}
+
+.param-section, .response-section {
+    margin-bottom: 25px;
+}
+
+.section-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #6c757d;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+}
+
+.param-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.param-table th {
+    background: #e9ecef;
+    padding: 12px 15px;
+    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.param-table td {
+    padding: 12px 15px;
+    border-top: 1px solid #dee2e6;
+    font-size: 0.9rem;
+}
+
+.param-name {
+    font-family: 'Courier New', monospace;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.param-type {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.code-block {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 40px 25px 25px 25px;
+    border-radius: 10px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    overflow-x: auto;
+    position: relative;
+    border: 1px solid #2d2d2d;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    white-space: pre;
+    margin-top: 8px;
+}
+
+.code-block::before {
+    content: 'JSON';
+    position: absolute;
+    top: 12px;
+    left: 15px;
+    background: rgba(102, 126, 234, 0.2);
+    color: #667eea;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #667eea;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.copy-btn:hover {
+    background: #764ba2;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.copy-btn:active {
+    transform: translateY(0);
+}
+
+/* Enhanced JSON syntax highlighting */
+.json-key { 
+    color: #4ec9b0;
+    font-weight: 600;
+}
+
+.json-string { 
+    color: #ce9178;
+}
+
+.json-number { 
+    color: #b5cea8;
+    font-weight: 500;
+}
+
+.json-boolean { 
+    color: #569cd6;
+    font-weight: 600;
+}
+
+.json-null {
+    color: #569cd6;
+    font-style: italic;
+}
+
+/* Special style for request examples (non-JSON) */
+.response-section .code-block:has(+ .code-block),
+.response-section:first-of-type .code-block {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: #fff;
+    font-size: 0.9rem;
+    padding: 35px 25px 20px 25px;
+    line-height: 1.5;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.response-section:first-of-type .code-block::before {
+    content: 'REQUEST';
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+/* Custom scrollbar for code blocks */
+.code-block::-webkit-scrollbar {
+    height: 8px;
+}
+
+.code-block::-webkit-scrollbar-track {
+    background: #2d2d2d;
+    border-radius: 4px;
+}
+
+.code-block::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 4px;
+}
+
+.code-block::-webkit-scrollbar-thumb:hover {
+    background: #764ba2;
+}
+
+.search-box {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 45px 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+}
+
+.endpoints-list {
+    background: #f8f9fa;
+    padding: 30px;
+    border-radius: 12px;
+}
+
+.endpoints-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.endpoint-card {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.endpoint-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.endpoint-card-method {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #0c5460;
+    margin-bottom: 5px;
+}
+
+.endpoint-card-path {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+@media (max-width: 968px) {
+    .sidebar {
+        flex-direction: column;
+    }
+    
+    .nav-menu {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .content {
+        height: auto;
+    }
+}
+
+.language-switcher {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    display: flex;
+    gap: 5px;
+    background: rgba(255,255,255,0.15);
+    padding: 5px;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+}
+
+.lang-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+    text-transform: uppercase;
+}
+
+.lang-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.lang-btn.active {
+    background: white;
+    color: #2a5298;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+[data-lang] {
+    display: none;
+}
+
+[data-lang].active {
+    display: inline;
+}
+
+.section[data-lang].active {
+    display: block;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="language-switcher">
+            <button class="lang-btn active" id="btn-en" data-lang-btn="en" type="button">ENG</button>
+            <button class="lang-btn" id="btn-ru" data-lang-btn="ru" type="button">RUS</button>
+        </div>
+        <h1>🚀 CAU Sigur REST API</h1>
+        <div class="header-info">
+            <div class="header-info-item">
+                <span>📦</span>
+                <span>API Version 1.0</span>
+            </div>
+            <div class="header-info-item">
+                <span>🔗</span>
+                <span>REST API endpoints</span>
+            </div>
+            <div class="header-info-item">
+                <span>⚙️</span>
+                <span>SIGUR v1.6.3.18</span>
+            </div>
+            <div class="header-info-item">
+                <span>📅</span>
+                <span>Revision dated: 10.09.2025</span>
+            </div>
+            <div class="header-info-item">
+                <span>👨‍💻</span>
+                <span>murodalidev</span>
+            </div>
+        </div>
+        <div style="margin-top: 15px;">
+            <span class="badge">Public REST API Developer's Guide</span>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="nav-menu">
+            <div class="nav-section">
+                <div class="nav-title">
+                    <span data-lang="en" class="active">Getting Started</span>
+                    <span data-lang="ru">Начало работы</span>
+                </div>
+                <div class="nav-item active" data-section="auth">
+                    <span class="nav-icon">🔐</span>
+                    <span data-lang="en" class="active">Authorization</span>
+                    <span data-lang="ru">Авторизация</span>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">
+                    <span data-lang="en" class="active">API Endpoints</span>
+                    <span data-lang="ru">API Endpoints</span>
+                </div>
+                <div class="nav-item" data-section="employees">
+                    <span class="nav-icon">👥</span>
+                    <span data-lang="en" class="active">Employees</span>
+                    <span data-lang="ru">Персонал</span>
+                </div>
+                <div class="nav-item" data-section="departments">
+                    <span class="nav-icon">🏢</span>
+                    <span data-lang="en" class="active">Departments</span>
+                    <span data-lang="ru">Отделы</span>
+                </div>
+                <div class="nav-item" data-section="positions">
+                    <span class="nav-icon">💼</span>
+                    <span data-lang="en" class="active">Positions</span>
+                    <span data-lang="ru">Должности</span>
+                </div>
+                <div class="nav-item" data-section="access">
+                    <span class="nav-icon">🚪</span>
+                    <span data-lang="en" class="active">Access Points</span>
+                    <span data-lang="ru">Точки доступа</span>
+                </div>
+                <div class="nav-item" data-section="events">
+                    <span class="nav-icon">📊</span>
+                    <span data-lang="en" class="active">Events & Reports</span>
+                    <span data-lang="ru">События и отчёты</span>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">
+                    <span data-lang="en" class="active">Reference</span>
+                    <span data-lang="ru">Справочник</span>
+                </div>
+                <div class="nav-item" data-section="endpoints-list">
+                    <span class="nav-icon">📋</span>
+                    <span data-lang="en" class="active">All Methods</span>
+                    <span data-lang="ru">Все методы</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Authorization Section -->
+            <div class="section active" id="auth">
+                <h2 class="section-title">
+                    <span data-lang="en" class="active">🔐 Authorization</span>
+                    <span data-lang="ru">🔐 Авторизация</span>
+                </h2>
+                <p style="color: #6c757d; margin-bottom: 25px;">
+                    <span data-lang="en" class="active">To access the API, you need to use an API key in the request header.</span>
+                    <span data-lang="ru">Для доступа к API необходимо использовать API ключ в заголовке запроса.</span>
+                </p>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">AUTH</span>
+                        <span class="endpoint-path">Authorization Header</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">
+                            <span data-lang="en" class="active">Use the API key in the header of each request.</span>
+                            <span data-lang="ru">Для работы с API используйте API ключ в заголовке каждого запроса.</span>
+                        </p>
+                        
+                        <div class="section-label">
+                            <span data-lang="en" class="active">Header Example</span>
+                            <span data-lang="ru">Пример заголовка</span>
+                        </div>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<span class="json-key">Authorization</span>: <span class="json-string">Api-Key YOUR_API_KEY</span></div>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px;">
+                            <strong>⚠️ <span data-lang="en" class="active">Important:</span><span data-lang="ru">Важно:</span></strong> 
+                            <span data-lang="en" class="active">Replace <code>YOUR_API_KEY</code> with your actual API key.</span>
+                            <span data-lang="ru">Замените <code>YOUR_API_KEY</code> на ваш действительный API ключ.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Endpoints List Section -->
+            <div class="section" id="endpoints-list">
+                <h2 class="section-title">
+                    <span data-lang="en" class="active">📋 All API Methods</span>
+                    <span data-lang="ru">📋 Все методы API</span>
+                </h2>
+                
+                <div class="endpoints-list">
+                    <h3 style="color: #495057; margin-bottom: 20px;">
+                        <span data-lang="en" class="active">👥 Employees</span>
+                        <span data-lang="ru">👥 Персонал (Employees)</span>
+                    </h3>
+                    <div class="endpoints-grid">
+                        <div class="endpoint-card" onclick="navigateToSection('employees')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-employees-id</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('employees')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-employees</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('employees')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-employees-count</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('employees')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-employees-photo</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('employees')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-employees-photo-fullname</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('employees')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-employees-type</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('employees')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-employees-fullname</div>
+                        </div>
+                    </div>
+
+                    <h3 style="color: #495057; margin: 30px 0 20px;">
+                        <span data-lang="en" class="active">🏢 Departments</span>
+                        <span data-lang="ru">🏢 Отделы (Departments)</span>
+                    </h3>
+                    <div class="endpoints-grid">
+                        <div class="endpoint-card" onclick="navigateToSection('departments')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-departments</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('departments')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-departments-id</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('departments')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-departments-count</div>
+                        </div>
+                    </div>
+
+                    <h3 style="color: #495057; margin: 30px 0 20px;">
+                        <span data-lang="en" class="active">💼 Positions</span>
+                        <span data-lang="ru">💼 Должности (Positions)</span>
+                    </h3>
+                    <div class="endpoints-grid">
+                        <div class="endpoint-card" onclick="navigateToSection('positions')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-positions-id</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('positions')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-positions</div>
+                        </div>
+                    </div>
+
+                    <h3 style="color: #495057; margin: 30px 0 20px;">
+                        <span data-lang="en" class="active">🚪 Access Points</span>
+                        <span data-lang="ru">🚪 Точки доступа (Access Points)</span>
+                    </h3>
+                    <div class="endpoints-grid">
+                        <div class="endpoint-card" onclick="navigateToSection('access')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-access-points-tree</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('access')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-access-points</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('access')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-access-points-id</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('access')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-access-points-count</div>
+                        </div>
+                    </div>
+
+                    <h3 style="color: #495057; margin: 30px 0 20px;">
+                        <span data-lang="en" class="active">📊 Events & Reports</span>
+                        <span data-lang="ru">📊 События и отчёты (Events / Reports)</span>
+                    </h3>
+                    <div class="endpoints-grid">
+                        <div class="endpoint-card" onclick="navigateToSection('events')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-events-id</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('events')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-events</div>
+                        </div>
+                        <div class="endpoint-card" onclick="navigateToSection('events')">
+                            <div class="endpoint-card-method">GET</div>
+                            <div class="endpoint-card-path">/get-events-user-type</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 40px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+                        <h4 style="margin-bottom: 10px;">
+                            <span data-lang="en" class="active">📌 Base URL</span>
+                            <span data-lang="ru">📌 Базовый URL</span>
+                        </h4>
+                        <code style="background: rgba(255,255,255,0.2); padding: 10px; display: block; border-radius: 6px; color: white;">
+                            {{baseURL}}/api/sigur
+                        </code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employees Section -->
+            <div class="section" id="employees">
+                <h2 class="section-title">
+                    <span data-lang="en" class="active">👥 Employees</span>
+                    <span data-lang="ru">👥 Персонал (Employees)</span>
+                </h2>
+                
+                <div class="search-box">
+                    <input type="text" class="search-input" placeholder="Search methods..." onkeyup="searchEndpoints(this)" data-placeholder-en="Search methods..." data-placeholder-ru="Поиск методов...">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <!-- Get Employee by ID -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-employees-id</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">
+                            <span data-lang="en" class="active">Get employee information by ID.</span>
+                            <span data-lang="ru">Получить информацию о сотруднике по его ID.</span>
+                        </p>
+                        
+                        <div class="param-section">
+                            <div class="section-label">
+                                <span data-lang="en" class="active">Request Parameters</span>
+                                <span data-lang="ru">Параметры запроса</span>
+                            </div>
+                            <table class="param-table">
+                                <tr>
+                                    <th><span data-lang="en" class="active">Parameter</span><span data-lang="ru">Параметр</span></th>
+                                    <th><span data-lang="en" class="active">Type</span><span data-lang="ru">Тип</span></th>
+                                    <th><span data-lang="en" class="active">Description</span><span data-lang="ru">Описание</span></th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">employee_id</span></td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td><span data-lang="en" class="active">Employee ID</span><span data-lang="ru">ID сотрудника</span></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">
+                                <span data-lang="en" class="active">Request Example</span>
+                                <span data-lang="ru">Пример запроса</span>
+                            </div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-employees-id?employee_id=9605</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">
+                                <span data-lang="en" class="active">Response Example</span>
+                                <span data-lang="ru">Пример ответа</span>
+                            </div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-employees-id"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"type"</span>: <span class="json-string">"result_set"</span>,
+    <span class="json-key">"rows"</span>: [
+      {
+        <span class="json-key">"ID"</span>: <span class="json-number">9605</span>,
+        <span class="json-key">"PARENT_ID"</span>: <span class="json-number">17069</span>,
+        <span class="json-key">"NAME"</span>: <span class="json-string">"SHOKHISTA BOTIRBOEVA"</span>,
+        <span class="json-key">"POS"</span>: <span class="json-string">"Architecture & Design"</span>,
+        <span class="json-key">"TABID"</span>: <span class="json-string">"210782"</span>,
+        <span class="json-key">"STATUS"</span>: <span class="json-string">"AVAILABLE"</span>
+      }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get All Employees -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-employees</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить список всех сотрудников.</p>
+                        
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-employees</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-employees"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"type"</span>: <span class="json-string">"result_set"</span>,
+    <span class="json-key">"rows"</span>: [
+      {
+        <span class="json-key">"ID"</span>: <span class="json-number">9605</span>,
+        <span class="json-key">"PARENT_ID"</span>: <span class="json-number">17069</span>,
+        <span class="json-key">"NAME"</span>: <span class="json-string">"SHOKHISTA BOTIRBOEVA"</span>,
+        <span class="json-key">"POS"</span>: <span class="json-string">"Architecture & Design"</span>,
+        <span class="json-key">"TABID"</span>: <span class="json-string">"210782"</span>,
+        <span class="json-key">"STATUS"</span>: <span class="json-string">"AVAILABLE"</span>
+      }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get Employees Count -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-employees-count</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить общее количество сотрудников.</p>
+                        
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-employees-count</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-employees-count"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"rows"</span>: [
+      { <span class="json-key">"total_employees"</span>: <span class="json-number">4699</span> }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get Employee Photo by ID -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-employees-photo</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить фотографию сотрудника по ID.</p>
+                        
+                        <div class="param-section">
+                            <div class="section-label">Параметры запроса</div>
+                            <table class="param-table">
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Тип</th>
+                                    <th>Описание</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">user_id</span></td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td>ID сотрудника</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-employees-photo?user_id=9619</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"user_id"</span>: <span class="json-number">9619</span>,
+  <span class="json-key">"fullname"</span>: <span class="json-string">"MARUFJON MAKSUDOV"</span>,
+  <span class="json-key">"preview_photo"</span>: <span class="json-string">"/9j/4AAQSkZJRgABAQEAAAAAAQ..."</span>
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get Employee Photo by Fullname -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-employees-photo-fullname</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить фотографию сотрудника по ФИО.</p>
+                        
+                        <div class="param-section">
+                            <div class="section-label">Параметры запроса</div>
+                            <table class="param-table">
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Тип</th>
+                                    <th>Описание</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">fullname</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td>ФИО сотрудника</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-employees-photo-fullname?fullname=MARUFJON MAKSUDOV</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"user_id"</span>: <span class="json-number">9619</span>,
+  <span class="json-key">"fullname"</span>: <span class="json-string">"MARUFJON MAKSUDOV"</span>,
+  <span class="json-key">"preview_photo"</span>: <span class="json-string">"/9j/4AAQSkZJRgABAQEA..."</span>
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get Employees by Type -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-employees-type</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить сотрудников по типу (STAFF / STUDENT / PROFESSOR).</p>
+                        
+                        <div class="param-section">
+                            <div class="section-label">Параметры запроса</div>
+                            <table class="param-table">
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Тип</th>
+                                    <th>Описание</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">employee_type</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td>Тип сотрудника: STAFF, STUDENT, PROFESSOR</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-employees-type?employee_type=STAFF</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"rows"</span>: [
+    {
+      <span class="json-key">"ID"</span>: <span class="json-number">15153</span>,
+      <span class="json-key">"NAME"</span>: <span class="json-string">"ADABOEV ASADBEK ULUG'BEK O'G'LI"</span>,
+      <span class="json-key">"POS"</span>: <span class="json-string">"Staff"</span>,
+      <span class="json-key">"TABID"</span>: <span class="json-string">"199006"</span>
+    }
+  ]
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get Employees by Fullname -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-employees-fullname</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить информацию о сотруднике по ФИО.</p>
+                        
+                        <div class="param-section">
+                            <div class="section-label">Параметры запроса</div>
+                            <table class="param-table">
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Тип</th>
+                                    <th>Описание</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">employee_fullname</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td>ФИО сотрудника</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-employees-fullname?employee_fullname=MARUFJON MAKSUDOV</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"rows"</span>: [
+    {
+      <span class="json-key">"ID"</span>: <span class="json-number">9619</span>,
+      <span class="json-key">"NAME"</span>: <span class="json-string">"MARUFJON MAKSUDOV"</span>,
+      <span class="json-key">"POS"</span>: <span class="json-string">"Architecture & Design"</span>
+    }
+  ]
+}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Departments Section -->
+            <div class="section" id="departments">
+                <h2 class="section-title">
+                    <span data-lang="en" class="active">🏢 Departments</span>
+                    <span data-lang="ru">🏢 Отделы (Departments)</span>
+                </h2>
+
+                <!-- Get All Departments -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-departments</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить список всех отделов.</p>
+                        
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-departments</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-departments"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"type"</span>: <span class="json-string">"result_set"</span>,
+    <span class="json-key">"rows"</span>: [
+      {
+        <span class="json-key">"ID"</span>: <span class="json-number">1001</span>,
+        <span class="json-key">"NAME"</span>: <span class="json-string">"Engineering Department"</span>,
+        <span class="json-key">"PARENT_ID"</span>: <span class="json-number">null</span>
+      }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get Department by ID -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-departments-id</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить информацию об отделе по ID.</p>
+                        
+                        <div class="param-section">
+                            <div class="section-label">Параметры запроса</div>
+                            <table class="param-table">
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Тип</th>
+                                    <th>Описание</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">department_id</span></td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td>ID отдела</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-departments-id?department_id=1001</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-departments-id"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"type"</span>: <span class="json-string">"result_set"</span>,
+    <span class="json-key">"rows"</span>: [
+      {
+        <span class="json-key">"ID"</span>: <span class="json-number">1001</span>,
+        <span class="json-key">"NAME"</span>: <span class="json-string">"Engineering Department"</span>,
+        <span class="json-key">"PARENT_ID"</span>: <span class="json-number">null</span>
+      }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get Departments Count -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-departments-count</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить общее количество отделов.</p>
+                        
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-departments-count</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-departments-count"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"rows"</span>: [
+      { <span class="json-key">"total_departments"</span>: <span class="json-number">85</span> }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Positions Section -->
+            <div class="section" id="positions">
+                <h2 class="section-title">
+                    <span data-lang="en" class="active">💼 Positions</span>
+                    <span data-lang="ru">💼 Должности (Positions)</span>
+                </h2>
+
+                <!-- Get Position by ID -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-positions-id</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить информацию о должности по ID.</p>
+                        
+                        <div class="param-section">
+                            <div class="section-label">Параметры запроса</div>
+                            <table class="param-table">
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Тип</th>
+                                    <th>Описание</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">position_id</span></td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td>ID должности</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-positions-id?position_id=5001</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-positions-id"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"type"</span>: <span class="json-string">"result_set"</span>,
+    <span class="json-key">"rows"</span>: [
+      {
+        <span class="json-key">"ID"</span>: <span class="json-number">5001</span>,
+        <span class="json-key">"NAME"</span>: <span class="json-string">"Senior Developer"</span>
+      }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get All Positions -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-positions</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить список всех должностей.</p>
+                        
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-positions</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-positions"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"type"</span>: <span class="json-string">"result_set"</span>,
+    <span class="json-key">"rows"</span>: [
+      {
+        <span class="json-key">"ID"</span>: <span class="json-number">5001</span>,
+        <span class="json-key">"NAME"</span>: <span class="json-string">"Senior Developer"</span>
+      },
+      {
+        <span class="json-key">"ID"</span>: <span class="json-number">5002</span>,
+        <span class="json-key">"NAME"</span>: <span class="json-string">"Project Manager"</span>
+      }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Access Points Section -->
+            <div class="section" id="access">
+                <h2 class="section-title">
+                    <span data-lang="en" class="active">🚪 Access Points</span>
+                    <span data-lang="ru">🚪 Точки доступа (Access Points)</span>
+                </h2>
+
+                <!-- Get Access Points Tree -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-access-points-tree</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить древовидную структуру точек доступа.</p>
+                        
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-access-points-tree</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-access-points-tree"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"type"</span>: <span class="json-string">"tree_structure"</span>,
+    <span class="json-key">"nodes"</span>: [
+      {
+        <span class="json-key">"ID"</span>: <span class="json-number">1</span>,
+        <span class="json-key">"NAME"</span>: <span class="json-string">"Main Building"</span>,
+        <span class="json-key">"CHILDREN"</span>: [
+          {
+            <span class="json-key">"ID"</span>: <span class="json-number">101</span>,
+            <span class="json-key">"NAME"</span>: <span class="json-string">"Entrance 1"</span>
+          }
+        ]
+      }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get All Access Points -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-access-points</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить список всех точек доступа.</p>
+                        
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-access-points</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-access-points"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"type"</span>: <span class="json-string">"result_set"</span>,
+    <span class="json-key">"rows"</span>: [
+      {
+        <span class="json-key">"ID"</span>: <span class="json-number">101</span>,
+        <span class="json-key">"NAME"</span>: <span class="json-string">"Entrance 1"</span>,
+        <span class="json-key">"LOCATION"</span>: <span class="json-string">"Main Building"</span>
+      }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get Access Point by ID -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-access-points-id</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить информацию о точке доступа по ID.</p>
+                        
+                        <div class="param-section">
+                            <div class="section-label">Параметры запроса</div>
+                            <table class="param-table">
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Тип</th>
+                                    <th>Описание</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">access_point_id</span></td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td>ID точки доступа</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-access-points-id?access_point_id=101</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-access-points-id"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"type"</span>: <span class="json-string">"result_set"</span>,
+    <span class="json-key">"rows"</span>: [
+      {
+        <span class="json-key">"ID"</span>: <span class="json-number">101</span>,
+        <span class="json-key">"NAME"</span>: <span class="json-string">"Entrance 1"</span>,
+        <span class="json-key">"LOCATION"</span>: <span class="json-string">"Main Building"</span>
+      }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get Access Points Count -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-access-points-count</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить общее количество точек доступа.</p>
+                        
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-access-points-count</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-access-points-count"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"rows"</span>: [
+      { <span class="json-key">"total_access_points"</span>: <span class="json-number">150</span> }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events Section -->
+            <div class="section" id="events">
+                <h2 class="section-title">
+                    <span data-lang="en" class="active">📊 Events & Reports</span>
+                    <span data-lang="ru">📊 События и отчёты (Events / Reports)</span>
+                </h2>
+
+                <!-- Get Events by ID -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-events-id</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить события по ID сотрудника.</p>
+                        
+                        <div class="param-section">
+                            <div class="section-label">Параметры запроса</div>
+                            <table class="param-table">
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Тип</th>
+                                    <th>Описание</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">employee_id</span></td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td>ID сотрудника</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-events-id?employee_id=9605</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-events-id"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"type"</span>: <span class="json-string">"result_set"</span>,
+    <span class="json-key">"rows"</span>: [
+      {
+        <span class="json-key">"EVENT_ID"</span>: <span class="json-number">12345</span>,
+        <span class="json-key">"EMPLOYEE_ID"</span>: <span class="json-number">9605</span>,
+        <span class="json-key">"EVENT_TYPE"</span>: <span class="json-string">"ACCESS_GRANTED"</span>,
+        <span class="json-key">"TIMESTAMP"</span>: <span class="json-string">"2025-01-15T08:30:00Z"</span>,
+        <span class="json-key">"ACCESS_POINT"</span>: <span class="json-string">"Main Entrance"</span>
+      }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get All Events -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-events</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить все события за указанный период.</p>
+                        
+                        <div class="param-section">
+                            <div class="section-label">Параметры запроса</div>
+                            <table class="param-table">
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Тип</th>
+                                    <th>Описание</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">start_date</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td>Дата начала (YYYY-MM-DD)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">end_date</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td>Дата окончания (YYYY-MM-DD)</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-events?start_date=2025-01-01&end_date=2025-01-31</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-events"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"type"</span>: <span class="json-string">"result_set"</span>,
+    <span class="json-key">"rows"</span>: [
+      {
+        <span class="json-key">"EVENT_ID"</span>: <span class="json-number">12345</span>,
+        <span class="json-key">"EMPLOYEE_ID"</span>: <span class="json-number">9605</span>,
+        <span class="json-key">"EVENT_TYPE"</span>: <span class="json-string">"ACCESS_GRANTED"</span>,
+        <span class="json-key">"TIMESTAMP"</span>: <span class="json-string">"2025-01-15T08:30:00Z"</span>
+      }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get Events by User Type -->
+                <div class="endpoint">
+                    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/api/sigur/get-events-user-type</span>
+                        <span class="endpoint-toggle">▼</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <p style="color: #6c757d; margin-bottom: 20px;">Получить события по типу сотрудника.</p>
+                        
+                        <div class="param-section">
+                            <div class="section-label">Параметры запроса</div>
+                            <table class="param-table">
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Тип</th>
+                                    <th>Описание</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">user_type</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td>Тип пользователя: STAFF, STUDENT, PROFESSOR</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример запроса</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+GET {{baseURL}}/api/sigur/get-events-user-type?user_type=STAFF</div>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="section-label">Пример ответа</div>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+{
+  <span class="json-key">"path"</span>: <span class="json-string">"get-events-user-type"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"type"</span>: <span class="json-string">"result_set"</span>,
+    <span class="json-key">"rows"</span>: [
+      {
+        <span class="json-key">"EVENT_ID"</span>: <span class="json-number">12346</span>,
+        <span class="json-key">"EMPLOYEE_ID"</span>: <span class="json-number">15153</span>,
+        <span class="json-key">"USER_TYPE"</span>: <span class="json-string">"STAFF"</span>,
+        <span class="json-key">"EVENT_TYPE"</span>: <span class="json-string">"ACCESS_GRANTED"</span>,
+        <span class="json-key">"TIMESTAMP"</span>: <span class="json-string">"2025-01-15T09:00:00Z"</span>
+      }
+    ]
+  }
+}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+console.log('=== Script loaded ===');
+
+// Navigation
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('.section');
+
+navItems.forEach(item => {
+    item.addEventListener('click', function() {
+        const sectionId = this.getAttribute('data-section');
+        
+        // Remove active class from all nav items
+        navItems.forEach(nav => nav.classList.remove('active'));
+        
+        // Add active class to clicked item
+        this.classList.add('active');
+        
+        // Hide all sections
+        sections.forEach(section => section.classList.remove('active'));
+        
+        // Show selected section
+        document.getElementById(sectionId).classList.add('active');
+    });
+});
+
+// Toggle endpoint details
+function toggleEndpoint(element) {
+    const endpoint = element.closest('.endpoint');
+    endpoint.classList.toggle('expanded');
+}
+
+// Copy code to clipboard
+function copyCode(button) {
+    const codeBlock = button.parentElement;
+    const code = codeBlock.innerText.replace('Copy', '').trim();
+    
+    navigator.clipboard.writeText(code).then(() => {
+        button.textContent = 'Copied!';
+        button.style.background = '#28a745';
+        
+        setTimeout(() => {
+            button.textContent = 'Copy';
+            button.style.background = '#667eea';
+        }, 2000);
+    });
+}
+
+// Search endpoints
+function searchEndpoints(input) {
+    const searchTerm = input.value.toLowerCase();
+    const endpoints = input.closest('.section').querySelectorAll('.endpoint');
+    
+    endpoints.forEach(endpoint => {
+        const path = endpoint.querySelector('.endpoint-path').textContent.toLowerCase();
+        const body = endpoint.querySelector('.endpoint-body').textContent.toLowerCase();
+        
+        if (path.includes(searchTerm) || body.includes(searchTerm)) {
+            endpoint.style.display = 'block';
+        } else {
+            endpoint.style.display = 'none';
+        }
+    });
+}
+
+// Navigate to section from endpoints list
+function navigateToSection(sectionId) {
+    // Update nav
+    navItems.forEach(nav => nav.classList.remove('active'));
+    document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+    
+    // Show section
+    sections.forEach(section => section.classList.remove('active'));
+    document.getElementById(sectionId).classList.add('active');
+    
+    // Scroll to top
+    document.querySelector('.content').scrollTop = 0;
+}
+
+// Translations object - MUST be declared before use
+const translations = {
+    en: {
+        // Employees section
+        'Получить информацию о сотруднике по его ID.': 'Get employee information by ID.',
+        'Получить список всех сотрудников.': 'Get list of all employees.',
+        'Получить общее количество сотрудников.': 'Get total number of employees.',
+        'Получить фотографию сотрудника по ID.': 'Get employee photo by ID.',
+        'Получить фотографию сотрудника по ФИО.': 'Get employee photo by full name.',
+        'Получить сотрудников по типу (STAFF / STUDENT / PROFESSOR).': 'Get employees by type (STAFF / STUDENT / PROFESSOR).',
+        'Получить информацию о сотруднике по ФИО.': 'Get employee information by full name.',
+        
+        // Common labels
+        'Параметры запроса': 'Request Parameters',
+        'Параметр': 'Parameter',
+        'Тип': 'Type',
+        'Описание': 'Description',
+        'Пример запроса': 'Request Example',
+        'Пример ответа': 'Response Example',
+        
+        // Employee parameters
+        'ID сотрудника': 'Employee ID',
+        'ФИО сотрудника': 'Employee full name',
+        'Тип сотрудника: STAFF, STUDENT, PROFESSOR': 'Employee type: STAFF, STUDENT, PROFESSOR',
+        
+        // Departments section
+        'Получить список всех отделов.': 'Get list of all departments.',
+        'Получить информацию об отделе по ID.': 'Get department information by ID.',
+        'Получить общее количество отделов.': 'Get total number of departments.',
+        'ID отдела': 'Department ID',
+        
+        // Positions section
+        'Получить информацию о должности по ID.': 'Get position information by ID.',
+        'Получить список всех должностей.': 'Get list of all positions.',
+        'ID должности': 'Position ID',
+        
+        // Access points section
+        'Получить древовидную структуру точек доступа.': 'Get access points tree structure.',
+        'Получить список всех точек доступа.': 'Get list of all access points.',
+        'Получить информацию о точке доступа по ID.': 'Get access point information by ID.',
+        'Получить общее количество точек доступа.': 'Get total number of access points.',
+        'ID точки доступа': 'Access point ID',
+        
+        // Events section
+        'Получить события по ID сотрудника.': 'Get events by employee ID.',
+        'Получить все события за указанный период.': 'Get all events for specified period.',
+        'Получить события по типу сотрудника.': 'Get events by employee type.',
+        'Дата начала (YYYY-MM-DD)': 'Start date (YYYY-MM-DD)',
+        'Дата окончания (YYYY-MM-DD)': 'End date (YYYY-MM-DD)',
+        'Тип пользователя: STAFF, STUDENT, PROFESSOR': 'User type: STAFF, STUDENT, PROFESSOR',
+        'user_type': 'user_type',
+        'start_date': 'start_date',
+        'end_date': 'end_date'
+    },
+    ru: {}
+};
+
+// Language Switcher - Simple and working version
+let currentLang = 'en';
+
+// Make switchLanguage globally accessible
+window.switchLanguage = function(lang) {
+    console.log('>>> Switching to language:', lang);
+    currentLang = lang;
+    
+    // Save language preference
+    localStorage.setItem('language', lang);
+    
+    // Update language buttons
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-lang-btn') === lang) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Update all elements with data-lang attribute
+    document.querySelectorAll('[data-lang]').forEach(element => {
+        element.classList.remove('active');
+        if (element.getAttribute('data-lang') === lang) {
+            element.classList.add('active');
+        }
+    });
+    
+    // Translate text nodes dynamically
+    translateTextNodes(lang);
+    
+    // Update placeholders
+    document.querySelectorAll('[data-placeholder-en], [data-placeholder-ru]').forEach(element => {
+        const placeholder = element.getAttribute(`data-placeholder-${lang}`);
+        if (placeholder) {
+            element.placeholder = placeholder;
+        }
+    });
+    
+    console.log('>>> Language switched successfully to:', lang);
+};
+
+function translateTextNodes(lang) {
+    let translated = 0;
+    document.querySelectorAll('[data-original-text]').forEach(element => {
+        const originalText = element.getAttribute('data-original-text');
+        if (lang === 'en' && translations.en[originalText]) {
+            element.textContent = translations.en[originalText];
+            translated++;
+        } else {
+            element.textContent = originalText;
+        }
+    });
+    console.log(`>>> Translated ${translated} elements to ${lang}`);
+}
+
+function initializeTranslations() {
+    // Mark all translatable elements with original Russian text
+    const selectors = '.endpoint-body p, .endpoint-body td, .endpoint-body th, .endpoint-body .section-label';
+    document.querySelectorAll(selectors).forEach(element => {
+        // Skip if already has data-lang or contains child with data-lang
+        if (element.hasAttribute('data-lang') || element.querySelector('[data-lang]')) {
+            return;
+        }
+        
+        // Skip cells with param-name class
+        if (element.querySelector('.param-name') || element.querySelector('.param-type')) {
+            return;
+        }
+        
+        const text = element.textContent.trim();
+        if (translations.en[text]) {
+            element.setAttribute('data-original-text', text);
+        }
+    });
+    
+    console.log('>>> Initialized translations for', document.querySelectorAll('[data-original-text]').length, 'elements');
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('>>> DOM Content Loaded');
+    
+    // Expand first endpoint in each section by default
+    sections.forEach(section => {
+        const firstEndpoint = section.querySelector('.endpoint');
+        if (firstEndpoint) {
+            firstEndpoint.classList.add('expanded');
+        }
+    });
+    
+    // Initialize translations
+    console.log('>>> Initializing translations...');
+    initializeTranslations();
+    
+    // Setup language buttons event listeners
+    const btnEn = document.getElementById('btn-en');
+    const btnRu = document.getElementById('btn-ru');
+    
+    if (btnEn && btnRu) {
+        console.log('>>> Language buttons found, adding event listeners');
+        
+        // Method 1: addEventListener
+        btnEn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('>>> ENG button clicked (addEventListener)');
+            window.switchLanguage('en');
+        });
+        
+        btnRu.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('>>> RUS button clicked (addEventListener)');
+            window.switchLanguage('ru');
+        });
+        
+        // Method 2: Direct onclick assignment (backup)
+        btnEn.onclick = function(e) {
+            e.preventDefault();
+            console.log('>>> ENG button clicked (onclick)');
+            window.switchLanguage('en');
+        };
+        
+        btnRu.onclick = function(e) {
+            e.preventDefault();
+            console.log('>>> RUS button clicked (onclick)');
+            window.switchLanguage('ru');
+        };
+        
+        console.log('>>> Event listeners and onclick handlers attached successfully');
+    } else {
+        console.error('>>> Language buttons NOT found!');
+        console.log('>>> btnEn:', btnEn);
+        console.log('>>> btnRu:', btnRu);
+    }
+    
+    // Load saved language or default to English
+    const savedLang = localStorage.getItem('language') || 'en';
+    console.log('>>> Loading language:', savedLang);
+    switchLanguage(savedLang);
+});
+</script>
+
+</body>
+</html>
