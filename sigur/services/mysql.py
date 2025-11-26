@@ -64,10 +64,26 @@ def _to_json_safe(data: Any) -> Any:
     
     Bytes objects are automatically converted to base64-encoded strings
     to make them JSON serializable (useful for binary data like photos).
+    JSON strings from MySQL JSON_OBJECT() are automatically parsed into
+    Python dict/list objects.
+    None values are preserved as None (will be serialized as null in JSON).
     """
-    if isinstance(data, bytes):
+    if data is None:
+        # Preserve None values (will be serialized as null in JSON)
+        return None
+    elif isinstance(data, bytes):
         # Convert bytes to base64 string for JSON serialization
         return base64.b64encode(data).decode('utf-8')
+    elif isinstance(data, str):
+        # Try to parse JSON strings (e.g., from MySQL JSON_OBJECT())
+        # This handles cases where MySQL returns JSON columns as strings
+        try:
+            parsed = json.loads(data)
+            # Recursively process the parsed JSON to handle nested structures
+            return _to_json_safe(parsed)
+        except (json.JSONDecodeError, ValueError):
+            # Not a JSON string, return as-is
+            return data
     elif isinstance(data, dict):
         return {key: _to_json_safe(value) for key, value in data.items()}
     elif isinstance(data, (list, tuple)):
