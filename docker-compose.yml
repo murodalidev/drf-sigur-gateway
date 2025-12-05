@@ -12,6 +12,6 @@ services:
     restart: unless-stopped
     networks:
       - default
-
 volumes:
   static_data:
+
