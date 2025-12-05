@@ -8,6 +8,8 @@ services:
     volumes:
       # Host filesystem ga bind mount - nginx uchun oson kirish
       - ./staticfiles:/app/staticfiles
+      # SQLite database faylini mount qilish
+      - ./db.sqlite3:/app/db.sqlite3
     ports:
       - "127.0.0.1:8000:8000"  # Faqat localhost orqali, host nginx reverse proxy sifatida ishlaydi
     restart: unless-stopped
