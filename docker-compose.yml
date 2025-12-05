@@ -6,12 +6,11 @@ services:
     env_file:
       - .env
     volumes:
-      - static_data:/app/staticfiles
+      # Host filesystem ga bind mount - nginx uchun oson kirish
+      - ./staticfiles:/app/staticfiles
     ports:
       - "127.0.0.1:8000:8000"  # Faqat localhost orqali, host nginx reverse proxy sifatida ishlaydi
     restart: unless-stopped
     networks:
       - default
-volumes:
-  static_data:
 
