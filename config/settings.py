@@ -37,9 +37,20 @@ allowed_hosts_env = os.getenv('DJANGO_ALLOWED_HOSTS')
 ALLOWED_HOSTS = _split_env_list(allowed_hosts_env)
 if DEBUG and not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ['*']
+elif not DEBUG and not ALLOWED_HOSTS:
+    # Production default hosts - api.sigur.local and IP
+    ALLOWED_HOSTS = ['api.sigur.local', '100.65.0.137', 'localhost', '127.0.0.1']
 
 csrf_trusted_env = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS')
 CSRF_TRUSTED_ORIGINS = _split_env_list(csrf_trusted_env)
+if not DEBUG and not CSRF_TRUSTED_ORIGINS:
+    # Production default CSRF trusted origins
+    CSRF_TRUSTED_ORIGINS = [
+        'http://api.sigur.local',
+        'https://api.sigur.local',
+        'http://100.65.0.137',
+        'https://100.65.0.137',
+    ]
 
 
 # Application definition
